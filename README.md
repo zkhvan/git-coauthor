@@ -4,8 +4,6 @@ Assign coauthors to commits—straight from the command line! 🎉
 
 For more info on coauthors, check out [the github docs for coauthoring](https://help.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors).
 
-![coauthor-demo](img/coauthor-demo.gif)
-
 ## Installation 💾
 
 ```bash
@@ -19,3 +17,5 @@ $ make install
 ```bash
 $ git coauthor <commit> <coauthors>...
 ```
+
+![coauthor-demo](img/coauthor-demo.gif)
