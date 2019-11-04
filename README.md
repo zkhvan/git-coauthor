@@ -19,3 +19,13 @@ $ git coauthor <commit> <coauthors>...
 ```
 
 ![coauthor-demo](img/coauthor-demo.gif)
+
+### Example Usage
+
+```bash
+# Assign a single coauthor
+$ git coauthor c84b7158 "Zhenya Khvan <zhenya.khvan@gmail.com>"
+
+# Assign multiple coauthors
+$ git coauthor c84b7158 "Zhenya Khvan <zhenya.khvan@gmail.com>" "Lilly Dinh-le <lilly.dinhle@gmail.com>"
+```
