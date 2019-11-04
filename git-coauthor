@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+set -e
+
+COAUTHORED_BY_PREFIX="Co-authored-by:"
+
+# Exits with error if not a git repository.
+__check_in_repository() {
+  git rev-parse --git-dir > /dev/null 2>&1
+}
+
+# Exits with message if invalid usage.
+__check_args() {
+  if (( $# < 2 )); then
+    echo "Usage: $0 <commit> <coauthors...>"
+    echo
+    exit 1
+  fi
+}
+
+__remove_trailing_newline() {
+  echo "$1" | sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba'
+}
+
+__add_commit_trailer_newline() {
+  echo "$1\n\n"
+}
+
+__remove_coauthors_commit_trailer() {
+  echo "$1" | sed "s/^$COAUTHORED_BY_PREFIX .*$//g"
+}
+
+__create_coauthors_commit_trailer() {
+  local coauthors=("$@")
+  local coauthors_commit_trailer=""
+
+  for coauthor in "${coauthors[@]}"; do
+    coauthors_commit_trailer+="$COAUTHORED_BY_PREFIX $coauthor\n"
+  done
+
+  echo "$coauthors_commit_trailer"
+}
+
+__add_coauthors_commit_trailer() {
+  local commit_message=$1
+  local coauthors=("${@:2}")
+
+  echo "$1$(__create_coauthors_commit_trailer "${coauthors[@]}")"
+}
+
+__set_coauthors() {
+  local commit_message=$1
+  local coauthors=("${@:2}")
+  local commit_message_with_new_coauthors=$commit_message
+
+  commit_message_with_new_coauthors=$(__remove_coauthors_commit_trailer "$commit_message_with_new_coauthors")
+  commit_message_with_new_coauthors=$(__remove_trailing_newline "$commit_message_with_new_coauthors")
+  commit_message_with_new_coauthors=$(__add_commit_trailer_newline "$commit_message_with_new_coauthors")
+  commit_message_with_new_coauthors=$(__add_coauthors_commit_trailer "$commit_message_with_new_coauthors" "${coauthors[@]}")
+
+  echo -e "$commit_message_with_new_coauthors"
+}
+
+__git_coauthor() {
+  local commit_sha=$1
+  local commit_message
+  local commit_message_with_new_coauthors
+  local coauthors=("${@:2}")
+
+  if __check_in_repository; then
+    commit_message=$(git log --format=%B -n1 "$commit_sha")
+    commit_message_with_new_coauthors=$(__set_coauthors "$commit_message" "${coauthors[@]}")
+
+    {
+      GIT_SEQUENCE_EDITOR="sed -i -e '1s/^pick/edit/'" git rebase -i "$commit_sha^"
+      git commit --amend -m "$commit_message_with_new_coauthors"
+      git rebase --continue
+    } &> /dev/null
+
+    echo "$commit_message_with_new_coauthors"
+  fi
+}
+
+__check_args "$@"
+__git_coauthor "$@"
