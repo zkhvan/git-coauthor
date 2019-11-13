@@ -12,7 +12,7 @@ __check_in_repository() {
 # Exits with message if invalid usage.
 __check_args() {
   if (( $# < 2 )); then
-    echo "Usage: $0 <commit> <coauthors...>"
+    echo "Usage: $(basename "$0") <commit> <coauthors...>"
     echo
     exit 1
   fi
